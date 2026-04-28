@@ -1,11 +1,10 @@
 package com.example.chatserver.chat.controller;
 
-import com.example.chatserver.chat.dto.ChatMessageReqDto;
+import com.example.chatserver.chat.dto.ChatMessageDto;
 import com.example.chatserver.chat.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
@@ -39,7 +38,7 @@ public class StompController {
 
     @MessageMapping("/{roomId}") // 클라이언트에서 특정 publish/roomId 형태로 메시지를 발행시 MessageMapping 수신
 //    DestinationVariable은 @MessageMapping 어노테이션으로 정의된 Websocket Controller 내에서만 사용한다.
-    public void sendMessage(@DestinationVariable Long roomId, ChatMessageReqDto chatMessageReqDto) {
+    public void sendMessage(@DestinationVariable Long roomId, ChatMessageDto chatMessageReqDto) {
         log.info(chatMessageReqDto.getSenderEmail()+"님의 메시지: "+chatMessageReqDto.getMessage());
         chatService.saveMessage(roomId, chatMessageReqDto);
         messageTemplate.convertAndSend("/topic/"+roomId, chatMessageReqDto);
