@@ -212,10 +212,21 @@ public class ChatService {
             .orElseThrow(() -> new EntityNotFoundException("member can't be found"));
         Member otherMember = memberRepository.findById(otherMemberId).orElseThrow(() -> new EntityNotFoundException("member can't be found"));
 //        나와 상대방이 1:1 채팅 이미 참여하고 있다 해당  roomId 리턴
-        chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId());
+        Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId());
+        if(chatRoom.isPresent()){
+            return chatRoom.get().getId();
+        }
 //        만약에 1:1 채팅방이 없을 경우 기존 채팅방 개설
+        ChatRoom newRoom = ChatRoom.builder()
+            .isGroupChat("N")
+            .name(member.getName()+"님과"+otherMember.getName()+"의 채팅")
+            .build();
+        chatRoomRepository.save(newRoom);
+//        두사람 모두 참여자로 새롭게 추가
+        addParticipantToRoom(newRoom, member);
+        addParticipantToRoom(newRoom, otherMember);
 
-//        두사람 모두 참여자로 새롭게 추
+        return newRoom.getId();
     }
 
 }
