@@ -1,6 +1,7 @@
 package com.example.chatserver.chat.controller;
 
 import com.example.chatserver.chat.dto.ChatMessageReqDto;
+import com.example.chatserver.chat.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,10 +13,13 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class StompController {
     private final SimpMessageSendingOperations messageTemplate;
+    private final ChatService chatService;
 
-    public StompController(SimpMessageSendingOperations messageTemplate) {
+    public StompController(SimpMessageSendingOperations messageTemplate, ChatService chatService) {
         this.messageTemplate = messageTemplate;
+        this.chatService = chatService;
     }
+
 
 //    방법1. MessageMapping(수신)과 SendTo(topic에 메시지전달)한번에 처리
 
@@ -37,6 +41,7 @@ public class StompController {
 //    DestinationVariable은 @MessageMapping 어노테이션으로 정의된 Websocket Controller 내에서만 사용한다.
     public void sendMessage(@DestinationVariable Long roomId, ChatMessageReqDto chatMessageReqDto) {
         log.info(chatMessageReqDto.getSenderEmail()+"님의 메시지: "+chatMessageReqDto.getMessage());
+        chatService.saveMessage(roomId, chatMessageReqDto);
         messageTemplate.convertAndSend("/topic/"+roomId, chatMessageReqDto);
     }
 }
